@@ -9,13 +9,13 @@ const PORT = 3000;
 app.use(express.json());
 
 // Initialize Gemini SDK with User-Agent header as required by guidelines
-const getGeminiClient = () => {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
+const getGeminiClient = (req?: express.Request) => {
+  const apiKey = (req?.headers['x-gemini-api-key'] as string) || (req?.body?.apiKey as string) || process.env.GEMINI_API_KEY;
+  if (!apiKey || !apiKey.trim()) {
     return null;
   }
   return new GoogleGenAI({
-    apiKey,
+    apiKey: apiKey.trim(),
     httpOptions: {
       headers: {
         'User-Agent': 'aistudio-build',
@@ -33,7 +33,7 @@ app.post('/api/breakdown', async (req, res) => {
       return res.status(400).json({ error: 'Task title is required.' });
     }
 
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(req);
 
     if (!ai) {
       // Fallback generator when API Key is missing or in offline dev mode
@@ -61,7 +61,7 @@ ${taskContext ? `Additional Context/Details: "${taskContext}"` : ''}
 Decompose this into 5 chronological, actionable micro-steps. Also provide a brief 1-sentence overall encouragement and a 1-sentence nudge for Step 1.`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+      model: 'gemini-2.5-flash',
       contents: userPrompt,
       config: {
         systemInstruction,
@@ -121,7 +121,7 @@ app.post('/api/regenerate-step', async (req, res) => {
   try {
     const { taskTitle, stepNumber, currentStepTitle, allStepsTitles, feedback } = req.body;
 
-    const ai = getGeminiClient();
+    const ai = getGeminiClient(req);
     if (!ai) {
       return res.json({
         stepNumber,
@@ -141,7 +141,7 @@ Goal: Generate a new bite-sized step (${stepNumber} of 5) taking under 20 minute
     const prompt = `Replace step ${stepNumber} ("${currentStepTitle}"). ${feedback ? `User feedback: "${feedback}"` : ''}`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.6-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         systemInstruction,

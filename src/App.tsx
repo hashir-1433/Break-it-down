@@ -43,6 +43,15 @@ export default function App() {
 
   const activeTask = savedTasks.find((t) => t.id === activeTaskId) || null;
 
+  const getHeaders = () => {
+    const customKey = localStorage.getItem('user_gemini_key');
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (customKey && customKey.trim()) {
+      headers['x-gemini-api-key'] = customKey.trim();
+    }
+    return headers;
+  };
+
   const handleCreateBreakdown = async (req: BreakdownRequest) => {
     setIsLoading(true);
     setError(null);
@@ -50,7 +59,7 @@ export default function App() {
     try {
       const res = await fetch('/api/breakdown', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify(req),
       });
 
@@ -137,7 +146,7 @@ export default function App() {
     try {
       const res = await fetch('/api/regenerate-step', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: getHeaders(),
         body: JSON.stringify({
           taskTitle: activeTask.taskTitle,
           stepNumber,
