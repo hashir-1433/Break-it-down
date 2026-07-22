@@ -1,0 +1,6 @@
+{
+  "name": "Break It Down",
+  "description": "An anti-procrastination utility that fragments overwhelming tasks into bite-sized 20-minute action steps using Gemini AI.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
