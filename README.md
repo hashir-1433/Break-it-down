@@ -35,6 +35,13 @@ Break It Down tackles this problem by breaking big goals into small, manageable 
 
 ---
 
+## Screenshots
+<img width="1350" height="640" alt="2" src="https://github.com/user-attachments/assets/2c3f9dfc-d4df-4b1a-8229-62a838da5e05" />
+<img width="1351" height="640" alt="5" src="https://github.com/user-attachments/assets/f5c26ca4-ffab-4b0f-851b-c7f688032414" />
+<img width="1348" height="631" alt="4" src="https://github.com/user-attachments/assets/9af4b5d1-efca-4994-92d6-dba0eaa4a3a7" />
+<img width="1349" height="641" alt="3" src="https://github.com/user-attachments/assets/ca505c0d-deb3-4b60-b382-5c997789eb4a" />
+
+
 ## How It Works
 
 1. Enter a task or goal.
