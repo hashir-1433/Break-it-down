@@ -41,6 +41,8 @@ Break It Down tackles this problem by breaking big goals into small, manageable 
 <img width="1348" height="631" alt="4" src="https://github.com/user-attachments/assets/9af4b5d1-efca-4994-92d6-dba0eaa4a3a7" />
 <img width="1349" height="641" alt="3" src="https://github.com/user-attachments/assets/ca505c0d-deb3-4b60-b382-5c997789eb4a" />
 
+---
+
 
 ## How It Works
 
