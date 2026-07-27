@@ -74,30 +74,12 @@ Rules:
 
 ---
 
-## Screenshots
-
-### Home Page
-
-<img src="screenshots/home.png" width="900">
-
-### AI Breakdown
-
-<img src="screenshots/breakdown.png" width="900">
-
-### Mobile View
-
-<img src="screenshots/mobile.png" width="350">
-
-> Replace these images with your own screenshots. Store them inside a folder named **screenshots** in your repository.
-
----
-
 ## How to Run Locally
 
 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/Break-it-down.git
+git clone [https://github.com/YOUR_USERNAME/Break-it-down.git](https://github.com/hashir-1433/Break-it-down)
 ```
 
 2. Open the project folder
