@@ -290,6 +290,33 @@ export default function App() {
     setIsLoading(true);
     setError(null);
 
+    // Filter out casual chatter locally
+    const cleanTitle = (req.taskTitle || '').trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+    const EXACT_CHATTERS = new Set([
+      'hi', 'hello', 'hey', 'heyy', 'heyyy', 'yo', 'sup', 'whats up', 'whatsup',
+      'how are you', 'how are u', 'how r u', 'hru', 'hows it going', 'how do you do',
+      'good morning', 'good afternoon', 'good evening', 'good night',
+      'who are you', 'who r u', 'what are you', 'what is this', 'test', 'testing',
+      'hi there', 'hello there', 'bye', 'goodbye', 'thanks', 'thank you', 'thx',
+      'tell me a joke', 'what is your name', 'whats your name', 'are you ai',
+      'can we talk', 'say something', 'ok', 'okay', 'cool', 'nice', 'haha', 'lol'
+    ]);
+    const words = cleanTitle.split(' ');
+    const GREETING_STARTS = ['hi', 'hello', 'hey', 'yo', 'sup', 'hru', 'whats', 'how', 'who'];
+    const TASK_VERBS = [
+      'clean', 'write', 'build', 'study', 'code', 'organize', 'prepare', 'fix',
+      'draft', 'make', 'create', 'finish', 'wash', 'buy', 'pay', 'plan', 'review',
+      'send', 'email', 'file', 'read', 'learn', 'practice', 'design', 'update',
+      'setup', 'install', 'configure', 'solve', 'complete', 'workout', 'cook', 'do'
+    ];
+    const isCasual = EXACT_CHATTERS.has(cleanTitle) || (words.length <= 5 && GREETING_STARTS.includes(words[0]) && !words.some(w => TASK_VERBS.includes(w)));
+
+    if (isCasual) {
+      setError('⚠️ Casual chatter (e.g. "hi" or "how are you") is ignored! "Break It Down" only processes real actionable tasks.');
+      setIsLoading(false);
+      return;
+    }
+
     let data: any = null;
 
     try {
@@ -302,6 +329,12 @@ export default function App() {
       if (res.ok) {
         data = await res.json();
       } else {
+        const errJson = await res.json().catch(() => null);
+        if (errJson?.isCasualChat || errJson?.error) {
+          setError(errJson.error || 'Casual chatter is ignored. Please enter a real task!');
+          setIsLoading(false);
+          return;
+        }
         console.warn(`Server returned status ${res.status}`);
       }
     } catch (err: any) {

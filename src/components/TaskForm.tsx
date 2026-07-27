@@ -17,6 +17,41 @@ const PRESETS = [
   "Draft client proposal document",
 ];
 
+// Helper to detect casual chat like "hi", "how are you", "what's up", etc.
+function isCasualChatInput(title: string): boolean {
+  if (!title || typeof title !== 'string') return true;
+  const clean = title.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+  if (!clean || clean.length < 2) return true;
+
+  const EXACT_CHATTERS = new Set([
+    'hi', 'hello', 'hey', 'heyy', 'heyyy', 'yo', 'sup', 'whats up', 'whatsup',
+    'how are you', 'how are u', 'how r u', 'hru', 'hows it going', 'how do you do',
+    'good morning', 'good afternoon', 'good evening', 'good night',
+    'who are you', 'who r u', 'what are you', 'what is this', 'test', 'testing',
+    'hi there', 'hello there', 'bye', 'goodbye', 'thanks', 'thank you', 'thx',
+    'tell me a joke', 'what is your name', 'whats your name', 'are you ai',
+    'can we talk', 'say something', 'ok', 'okay', 'cool', 'nice', 'haha', 'lol'
+  ]);
+
+  if (EXACT_CHATTERS.has(clean)) return true;
+
+  const words = clean.split(' ');
+  const GREETING_STARTS = ['hi', 'hello', 'hey', 'yo', 'sup', 'hru', 'whats', 'how', 'who'];
+
+  if (words.length <= 5 && GREETING_STARTS.includes(words[0])) {
+    const TASK_VERBS = [
+      'clean', 'write', 'build', 'study', 'code', 'organize', 'prepare', 'fix',
+      'draft', 'make', 'create', 'finish', 'wash', 'buy', 'pay', 'plan', 'review',
+      'send', 'email', 'file', 'read', 'learn', 'practice', 'design', 'update',
+      'setup', 'install', 'configure', 'solve', 'complete', 'workout', 'cook', 'do'
+    ];
+    const hasTaskVerb = words.some(w => TASK_VERBS.includes(w));
+    if (!hasTaskVerb) return true;
+  }
+
+  return false;
+}
+
 export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, isLoading }) => {
   const [taskTitle, setTaskTitle] = useState('');
   const [taskContext, setTaskContext] = useState('');
@@ -24,10 +59,18 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, isLoading }) => {
   const [procrastinationReason, setProcrastinationReason] = useState<ProcrastinationReason>('overwhelmed');
   const [timeAvailable, setTimeAvailable] = useState<string>('1h');
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [chatWarning, setChatWarning] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setChatWarning(null);
     if (!taskTitle.trim() || isLoading) return;
+
+    if (isCasualChatInput(taskTitle)) {
+      setChatWarning('⚠️ Casual chatter (e.g. "hi", "how are you") is ignored! "Break It Down" is designed exclusively for actionable tasks. Please type a specific task you want to break down.');
+      return;
+    }
+
     onSubmit({
       taskTitle: taskTitle.trim(),
       taskContext: taskContext.trim() || undefined,
@@ -38,6 +81,7 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, isLoading }) => {
   };
 
   const handlePresetSelect = (preset: string) => {
+    setChatWarning(null);
     setTaskTitle(preset);
   };
 
@@ -66,13 +110,30 @@ export const TaskForm: React.FC<TaskFormProps> = ({ onSubmit, isLoading }) => {
             <textarea
               id="task-title-input"
               value={taskTitle}
-              onChange={(e) => setTaskTitle(e.target.value)}
+              onChange={(e) => {
+                setTaskTitle(e.target.value);
+                if (chatWarning) setChatWarning(null);
+              }}
               placeholder="e.g. Write a 2,000-word essay on European history..."
               rows={2}
               className="w-full px-4 py-3.5 rounded-xl border-2 border-stone-200 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 text-stone-900 placeholder:text-stone-400 font-medium text-base resize-none transition-all outline-none"
               required
             />
           </div>
+
+          <AnimatePresence>
+            {chatWarning && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 p-3 bg-amber-50 border border-amber-300 text-amber-900 rounded-xl text-xs font-semibold flex items-start gap-2.5 shadow-sm"
+              >
+                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="leading-snug">{chatWarning}</div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Quick Presets */}
           <div className="mt-3">

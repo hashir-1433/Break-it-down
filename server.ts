@@ -64,6 +64,41 @@ async function callOpenRouter(apiKey: string, systemInstruction: string, userPro
   return JSON.parse(cleanJson);
 }
 
+// Helper to detect casual chat like "hi", "how are you", "what's up", etc.
+function isCasualChatInput(title: string): boolean {
+  if (!title || typeof title !== 'string') return true;
+  const clean = title.trim().toLowerCase().replace(/[^\w\s]/g, '').replace(/\s+/g, ' ');
+  if (!clean || clean.length < 2) return true;
+
+  const EXACT_CHATTERS = new Set([
+    'hi', 'hello', 'hey', 'heyy', 'heyyy', 'yo', 'sup', 'whats up', 'whatsup',
+    'how are you', 'how are u', 'how r u', 'hru', 'hows it going', 'how do you do',
+    'good morning', 'good afternoon', 'good evening', 'good night',
+    'who are you', 'who r u', 'what are you', 'what is this', 'test', 'testing',
+    'hi there', 'hello there', 'bye', 'goodbye', 'thanks', 'thank you', 'thx',
+    'tell me a joke', 'what is your name', 'whats your name', 'are you ai',
+    'can we talk', 'say something', 'ok', 'okay', 'cool', 'nice', 'haha', 'lol'
+  ]);
+
+  if (EXACT_CHATTERS.has(clean)) return true;
+
+  const words = clean.split(' ');
+  const GREETING_STARTS = ['hi', 'hello', 'hey', 'yo', 'sup', 'hru', 'whats', 'how', 'who'];
+
+  if (words.length <= 5 && GREETING_STARTS.includes(words[0])) {
+    const TASK_VERBS = [
+      'clean', 'write', 'build', 'study', 'code', 'organize', 'prepare', 'fix',
+      'draft', 'make', 'create', 'finish', 'wash', 'buy', 'pay', 'plan', 'review',
+      'send', 'email', 'file', 'read', 'learn', 'practice', 'design', 'update',
+      'setup', 'install', 'configure', 'solve', 'complete', 'workout', 'cook', 'do'
+    ];
+    const hasTaskVerb = words.some(w => TASK_VERBS.includes(w));
+    if (!hasTaskVerb) return true;
+  }
+
+  return false;
+}
+
 // API Route: Break down task into 5 micro-steps
 app.post('/api/breakdown', async (req, res) => {
   try {
@@ -71,6 +106,13 @@ app.post('/api/breakdown', async (req, res) => {
 
     if (!taskTitle || typeof taskTitle !== 'string' || !taskTitle.trim()) {
       return res.status(400).json({ error: 'Task title is required.' });
+    }
+
+    if (isCasualChatInput(taskTitle)) {
+      return res.status(400).json({
+        isCasualChat: true,
+        error: 'Casual chat (like "hi" or "how are you") is ignored! Break It Down only processes actionable tasks (e.g., "Clean bedroom", "Write history essay", "Fix database bug").',
+      });
     }
 
     const { apiKey, provider } = getKeyAndProvider(req);
